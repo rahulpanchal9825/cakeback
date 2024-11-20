@@ -12,24 +12,6 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-// Function to connect to DB and start the server
-const startServer = async () => {
-    try {
-        // Connect to the database
-        await connectDb();  
-        console.log("Database connected successfully!");
-
-        // Start the Express server
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        // Log errors that happen during the connection or startup
-        console.error("Failed to start server:", error);
-        process.exit(1); // Exit the process if the server fails to start
-    }
-};
-
 // Middleware to handle CORS
 const corsOptions = {
     origin: '*', // Allow requests only from this origin
@@ -53,5 +35,15 @@ app.get("/", (req, res) => {
 // Use API Routes (e.g., /api/user)
 app.use("/api", userRoute);
 
-// Start the server
-startServer();
+// Connect to the database and start the server
+connectDb()
+    .then(() => {
+        console.log("Database connected successfully!");
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+        });
+    })
+    .catch((error) => {
+        console.error("Failed to connect to the database:", error);
+        process.exit(1); // Exit the process if the connection fails
+    });
